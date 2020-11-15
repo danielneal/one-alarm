@@ -43,7 +43,7 @@ export function ClockFace() {
     );
 }
 
-export function Clock() {
+export default function Clock() {
     return <ClockFace/>
 }
 
