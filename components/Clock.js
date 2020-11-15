@@ -2,18 +2,35 @@ import React,{useState} from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import * as Svg from 'react-native-svg';
 
-export function ClockFace() {
+export default function ClockFace(props) {
     const [layout,setLayout]=useState({})
+    const minutes = props.date.getMinutes()
+    const hours = props.date.getHours() % 12
     const centerX = layout.width/2
     const centerY = layout.height/2
     const textRadius = layout.width/2-20
     const tickRadiusInner = layout.width/2-40
     const tickRadiusOuter = layout.width/2-35
-    const showFace=layout.width && layout.height
+    const minuteHandRadius = tickRadiusInner - 10
+    const hourHandRadius = 50
+    const showFace = layout.width && layout.height
+    const angleMinutes = 1.5*Math.PI+2*Math.PI*minutes/60
+    const minutesX = centerX+minuteHandRadius*Math.cos(angleMinutes)
+    const minutesY = centerY+minuteHandRadius*Math.sin(angleMinutes)
+    const angleHours = 1.5*Math.PI+2*Math.PI*(hours+minutes/60)/12
+    const hoursX = centerX+hourHandRadius*Math.cos(angleHours)
+    const hoursY = centerY+hourHandRadius*Math.sin(angleHours)
+    const clockHands = showFace ?
+          <>
+            <Svg.Circle cx={centerX} cy={centerY} r={6} fill="black"/>
+            <Svg.Line x1={centerX} y1={centerY} x2={minutesX} y2={minutesY} stroke="black" strokeWidth={3}/>
+            <Svg.Line x1={centerX} y1={centerY} x2={hoursX} y2={hoursY} stroke="black" strokeWidth={6}/>
+          </>: null
 
-    let clockNumbers = showFace ?
+
+    const clockNumbers = showFace ?
         [1,2,3,4,5,6,7,8,9,10,11,12].map((i)=> {
-            let angleRadians = Math.PI - 2*Math.PI*i/12
+            let angleRadians = Math.PI- 2*Math.PI*i/12
             let textX = centerX+textRadius*Math.sin(angleRadians)
             let textY = centerY+textRadius*Math.cos(angleRadians)
             return <View style={[styles.numberView,{left:textX,top:textY}]}>
@@ -21,7 +38,8 @@ export function ClockFace() {
             </View>;
         })
         : null
-    let clockTicks = showFace ?
+
+    const clockTicks = showFace ?
         [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59].map(
             (i) => {
                 let angleRadians = 2*Math.PI * i/60
@@ -36,15 +54,12 @@ export function ClockFace() {
     return (
         <View style={styles.container} onLayout={(e)=>{setLayout(e.nativeEvent.layout)}}>
           {clockNumbers}
-          <Svg.Svg style={[styles.container, {backgroundColor:"transparent"}]}>
+          <Svg.Svg style={styles.container}>
+            {clockHands}
             {clockTicks}
         </Svg.Svg>
         </View>
     );
-}
-
-export default function Clock() {
-    return <ClockFace/>
 }
 
 const styles = StyleSheet.create({
