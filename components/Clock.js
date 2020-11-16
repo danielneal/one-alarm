@@ -33,9 +33,10 @@ export default function ClockFace(props) {
             let angleRadians = Math.PI- 2*Math.PI*i/12
             let textX = centerX+textRadius*Math.sin(angleRadians)
             let textY = centerY+textRadius*Math.cos(angleRadians)
-            return <View style={[styles.numberView,{left:textX,top:textY}]}>
-              <Text key={i} style={[styles.numberText]}>{i}</Text>
-            </View>;
+            return (
+            <View key={i} style={[styles.numberView,{left:textX,top:textY}]}>
+              <Text style={[styles.numberText]}>{i}</Text>
+            </View>);
         })
         : null
 
@@ -48,7 +49,7 @@ export default function ClockFace(props) {
                 let x2 = centerX+tickRadiusOuter*Math.sin(angleRadians)
                 let y2 = centerY+tickRadiusOuter*Math.cos(angleRadians)
                 let bold = (i%5)===0
-                return <Svg.Line stroke="black" key={`${x1},${y1}`} strokeWidth={bold?2:1} x1={x1} y1={y1} x2={x2} y2={y2}/>
+                return <Svg.Line stroke="black" key={i} strokeWidth={bold?2:1} x1={x1} y1={y1} x2={x2} y2={y2}/>
             })
         : null
     return (
