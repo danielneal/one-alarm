@@ -13,22 +13,22 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "uk.co.danielneal.onealarm"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
-      }
+      },
+      "package": "uk.co.danielneal.onealarm"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-
-    "notification": {
-      "bundledSounds": ["alarm.mp3", "alarm_wav.wav"]
     }
   }
 }
