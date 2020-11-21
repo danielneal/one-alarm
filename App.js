@@ -39,7 +39,6 @@ export default function App() {
       setAlarmAtGestureBegin(alarm);
     }
     if (e.nativeEvent.state === State.END) {
-      console.log(alarm);
       if (notificationID !== null) {
         await Notifications.cancelScheduledNotificationAsync(notificationID);
       }
