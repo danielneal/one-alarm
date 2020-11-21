@@ -13,6 +13,7 @@ import parseISO from 'date-fns/parseISO'
 import formatISO from 'date-fns/formatISO'
 
 const alarmStorageKey = "@alarm"
+const notificationID = "@alarm"
 
 async function requestPermissionsAsync() {
   return await Notifications.requestPermissionsAsync({
@@ -39,17 +40,16 @@ export default function App() {
   const [alarm, setAlarm] = useState(null);
   const [handlerState, setHandlerState] = useState();
   const [alarmAtGestureBegin, setAlarmAtGestureBegin] = useState(alarm);
-  const [notificationID, setNotificationID] = useState(null);
 
   const onHandlerStateChange = useCallback(async (e) => {
     if (e.nativeEvent.state === State.BEGAN) {
       setAlarmAtGestureBegin(alarm);
     }
+
     if (e.nativeEvent.state === State.END) {
-      if (notificationID !== null) {
-        await Notifications.cancelScheduledNotificationAsync(notificationID);
-      }
-      const _notificationID = await Notifications.scheduleNotificationAsync({
+      await Notifications.cancelScheduledNotificationAsync(notificationID);
+      await Notifications.scheduleNotificationAsync({
+        identifier: notificationID,
         content: {
           title: "One Alarm",
           subtitle: "It's time.",
@@ -61,7 +61,7 @@ export default function App() {
           repeat: true
         },
       });
-      setNotificationID(_notificationID)
+
       await AsyncStorage.setItem(alarmStorageKey,formatISO(alarm))
     }
   });
