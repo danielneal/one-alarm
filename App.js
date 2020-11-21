@@ -1,13 +1,18 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { SafeAreaView,StyleSheet, Text, View } from "react-native";
 import * as Svg from "react-native-svg";
 import Clock from "./components/Clock";
 import ClockDigital from "./components/ClockDigital";
 import { State, PanGestureHandler } from "react-native-gesture-handler";
-import add from "date-fns/add";
 import * as Notifications from "expo-notifications";
 import roundToNearestMinutes from "date-fns/roundToNearestMinutes";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import add from "date-fns/add";
+import parseISO from 'date-fns/parseISO'
+import formatISO from 'date-fns/formatISO'
+
+const alarmStorageKey = "@alarm"
 
 async function requestPermissionsAsync() {
   return await Notifications.requestPermissionsAsync({
@@ -31,10 +36,11 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
-  const [alarm, setAlarm] = useState(roundToNearestMinutes(new Date()));
+  const [alarm, setAlarm] = useState(null);
   const [handlerState, setHandlerState] = useState();
   const [alarmAtGestureBegin, setAlarmAtGestureBegin] = useState(alarm);
   const [notificationID, setNotificationID] = useState(null);
+
   const onHandlerStateChange = useCallback(async (e) => {
     if (e.nativeEvent.state === State.BEGAN) {
       setAlarmAtGestureBegin(alarm);
@@ -50,26 +56,42 @@ export default function App() {
           sound: "alarm.wav",
         },
         trigger: {
-          hours:alarm.getHours(),
-          minutes:alarm.getMinutes(),
+          hours: alarm.getHours(),
+          minutes: alarm.getMinutes(),
           repeat: true
         },
       });
-      setNotificationID(_notificationID);
+      setNotificationID(_notificationID)
+      await AsyncStorage.setItem(alarmStorageKey,formatISO(alarm))
     }
   });
+
   const onGestureEvent = useCallback(async (e) => {
     setAlarm(add(alarmAtGestureBegin, { minutes: e.nativeEvent.translationY/2 }));
   });
 
+  useEffect(()=>{
+    const getAlarmFromStorage = async ()=> {
+      const dateStr = await AsyncStorage.getItem(alarmStorageKey)
+      const date = dateStr !== null ? parseISO(dateStr) : roundToNearestMinutes(new Date())
+      setAlarm(date)
+    }
+    getAlarmFromStorage()
+  },[])
+  const clocks = alarm!==null &&
+        (<>
+           <Clock date={alarm}/>
+           <ClockDigital date={alarm}/>
+         </>)
   return (
     <SafeAreaView>
       <PanGestureHandler
         onHandlerStateChange={onHandlerStateChange}
         onGestureEvent={onGestureEvent}>
         <View style={styles.container}>
-          <Clock date={alarm} />
-          <ClockDigital date={alarm}/>
+          {
+            clocks
+          }
         </View>
       </PanGestureHandler>
     </SafeAreaView>
