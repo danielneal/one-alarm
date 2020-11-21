@@ -49,8 +49,11 @@ export default function App() {
           subtitle: "It's time.",
           sound: "alarm.wav",
         },
-        // trigger: alarm,
-        trigger: null, // triggers alarm immediately, for testing
+          trigger: {
+              hours:alarm.getHours(),
+              minutes:alarm.getMinutes(),
+              repeat: true
+          },
       });
       setNotificationID(_notificationID);
     }
