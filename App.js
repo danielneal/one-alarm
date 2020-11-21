@@ -1,8 +1,9 @@
 import { StatusBar } from "expo-status-bar";
 import React, { useCallback, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { SafeAreaView,StyleSheet, Text, View } from "react-native";
 import * as Svg from "react-native-svg";
 import Clock from "./components/Clock";
+import ClockDigital from "./components/ClockDigital";
 import { State, PanGestureHandler } from "react-native-gesture-handler";
 import add from "date-fns/add";
 import * as Notifications from "expo-notifications";
@@ -19,7 +20,7 @@ async function requestPermissionsAsync() {
   });
 }
 
-requestPermissionsAsync().then(console.log);
+requestPermissionsAsync();
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -39,7 +40,6 @@ export default function App() {
       setAlarmAtGestureBegin(alarm);
     }
     if (e.nativeEvent.state === State.END) {
-      console.log(alarm);
       if (notificationID !== null) {
         await Notifications.cancelScheduledNotificationAsync(notificationID);
       }
@@ -49,36 +49,38 @@ export default function App() {
           subtitle: "It's time.",
           sound: "alarm.wav",
         },
-          trigger: {
-              hours:alarm.getHours(),
-              minutes:alarm.getMinutes(),
-              repeat: true
-          },
+        trigger: {
+          hours:alarm.getHours(),
+          minutes:alarm.getMinutes(),
+          repeat: true
+        },
       });
       setNotificationID(_notificationID);
     }
   });
   const onGestureEvent = useCallback(async (e) => {
-    setAlarm(add(alarmAtGestureBegin, { minutes: e.nativeEvent.translationY }));
+    setAlarm(add(alarmAtGestureBegin, { minutes: e.nativeEvent.translationY/2 }));
   });
 
   return (
-    <PanGestureHandler
-      onHandlerStateChange={onHandlerStateChange}
-      onGestureEvent={onGestureEvent}
-    >
-      <View style={styles.container}>
-        <Clock date={alarm} />
-      </View>
-    </PanGestureHandler>
+    <SafeAreaView>
+      <PanGestureHandler
+        onHandlerStateChange={onHandlerStateChange}
+        onGestureEvent={onGestureEvent}>
+        <View style={styles.container}>
+          <Clock date={alarm} />
+          <ClockDigital date={alarm}/>
+        </View>
+      </PanGestureHandler>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+    width:"100%",
+    height:"100%",
+    alignItems:"center",
+    justifyContent:"flex-start"
+  }
 });
