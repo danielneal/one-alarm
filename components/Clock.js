@@ -12,7 +12,7 @@ export default function Clock(props) {
   const tickRadiusInner = layout.width/2-40
   const tickRadiusOuter = layout.width/2-35
   const minuteHandRadius = tickRadiusInner - 10
-  const hourHandRadius = 50
+  const hourHandRadius = layout.width/8
   const showFace = layout.width && layout.height
   const angleMinutes = 1.5*Math.PI+2*Math.PI*minutes/60
   const minutesX = centerX+minuteHandRadius*Math.cos(angleMinutes)

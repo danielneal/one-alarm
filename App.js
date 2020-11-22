@@ -4,6 +4,7 @@ import { SafeAreaView,StyleSheet, Text, View } from "react-native";
 import * as Svg from "react-native-svg";
 import Clock from "./components/Clock";
 import ClockDigital from "./components/ClockDigital";
+import AlarmEnabled from "./components/AlarmEnabled";
 import { State, PanGestureHandler } from "react-native-gesture-handler";
 import * as Notifications from "expo-notifications";
 import roundToNearestMinutes from "date-fns/roundToNearestMinutes";
@@ -37,67 +38,94 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
-  const [alarm, setAlarm] = useState(null);
+  const [alarmState, setAlarmState] = useState(null);
   const [handlerState, setHandlerState] = useState();
-  const [alarmAtGestureBegin, setAlarmAtGestureBegin] = useState(alarm);
+  const [alarmTimeAtGestureBegin, setAlarmTimeAtGestureBegin] = useState(null);
+
+  const saveAlarmState = async () => {
+    if(alarmState!==null) {
+      let s = JSON.stringify({...alarmState,time:formatISO(alarmState.time)})
+      AsyncStorage.setItem(alarmStorageKey,s)
+    }
+  }
 
   const onHandlerStateChange = useCallback(async (e) => {
     if (e.nativeEvent.state === State.BEGAN) {
-      setAlarmAtGestureBegin(alarm);
+      setAlarmTimeAtGestureBegin(alarmState.time);
     }
 
     if (e.nativeEvent.state === State.END) {
       await Notifications.cancelScheduledNotificationAsync(notificationID);
       await Notifications.scheduleNotificationAsync({
-        identifier: notificationID,
-        content: {
-          title: "One Alarm",
-          subtitle: "It's time.",
-          sound: "alarm.wav",
-        },
-        trigger: {
-          hours: alarm.getHours(),
-          minutes: alarm.getMinutes(),
-          repeat: true
-        },
+          identifier: notificationID,
+          content: {
+            title: "One Alarm",
+            subtitle: "It's time.",
+            sound: "alarm.wav",
+          },
+          trigger: {
+            hour:alarmState.time.getHours(),
+            minute:alarmState.time.getMinutes(),
+            repeats:true
+          }
       });
-
-      await AsyncStorage.setItem(alarmStorageKey,formatISO(alarm))
+      if(alarmState.enabled === false) {
+        setAlarmState((state)=> {
+          return {...state,enabled:true}
+        })
+      }
     }
-  });
+  })
 
   const onGestureEvent = useCallback(async (e) => {
-    setAlarm(add(alarmAtGestureBegin, { minutes: e.nativeEvent.translationY/2 }));
+    let newTime = add(alarmTimeAtGestureBegin, { minutes: e.nativeEvent.translationY/2 })
+    setAlarmState((state) => {
+      return { ...state, time:newTime }
+    });
   });
 
+  const onAlarmEnabledChange = useCallback(async (e) => {
+    setAlarmState((state) => {
+      let newState = { ...state, enabled:!state.enabled }
+      return newState
+    })
+  })
+
   useEffect(()=>{
-    const getAlarmFromStorage = async ()=> {
-      const dateStr = await AsyncStorage.getItem(alarmStorageKey)
-      const date = dateStr !== null ? parseISO(dateStr) : roundToNearestMinutes(new Date())
-      setAlarm(date)
+    const getAlarmFromStorage = async () => {
+      const alarmState = await AsyncStorage.getItem(alarmStorageKey)
+      const alarmStateParsed = JSON.parse(alarmState)
+      setAlarmState(alarmStateParsed!==null ?
+                    { time:parseISO(alarmStateParsed.time),
+                      enabled:alarmStateParsed.enabled}
+                    : { time:roundToNearestMinutes(new Date()),
+                        enabled:false })
     }
     getAlarmFromStorage()
   },[])
-  const clocks = alarm!==null &&
-        (<>
-           <Clock date={alarm}/>
-           <ClockDigital date={alarm}/>
-         </>)
+
+  useEffect(()=>{
+    saveAlarmState()
+  }, [alarmState])
+
   return (
     <SafeAreaView>
       <PanGestureHandler
         onHandlerStateChange={onHandlerStateChange}
         onGestureEvent={onGestureEvent}>
         <View style={styles.container}>
-          {
-            clocks
+          { alarmState!==null &&
+            <>
+              <Clock date={alarmState.time}/>
+              <ClockDigital date={alarmState.time}/>
+              <AlarmEnabled enabled={alarmState.enabled} onChange={onAlarmEnabledChange}/>
+            </>
           }
         </View>
       </PanGestureHandler>
     </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     width:"100%",
