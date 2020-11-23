@@ -56,7 +56,7 @@ export default function App() {
       setAlarmTimeAtGestureBegin(alarmState.time);
     }
 
-    if (e.nativeEvent.state === State.END) {
+    if (e.nativeEvent.state === State.END && isAfter(alarmState.time,new Date())) {
       await Notifications.cancelScheduledNotificationAsync(notificationID);
       await Notifications.scheduleNotificationAsync({
           identifier: notificationID,
@@ -77,6 +77,7 @@ export default function App() {
 
   const onGestureEvent = useCallback(async (e) => {
     let newTime = add(alarmTimeAtGestureBegin, { minutes: e.nativeEvent.translationY/2 })
+    let alarmTime = isAfter(newTime, new Date())
     setAlarmState((state) => {
       return { ...state, time:newTime }
     });
