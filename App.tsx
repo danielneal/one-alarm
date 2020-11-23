@@ -47,7 +47,6 @@ function serialize(state) {
 
 function deserialize(s) {
   const parsed = JSON.parse(s);
-  console.log(parsed);
   if (parsed) {
     return { time: parsed.time && parseISO(parsed.time) };
   } else {

@@ -7,7 +7,6 @@ import add from "date-fns/add";
 
 export default function AlarmCountdown(props) {
   let [now, setNow] = useState(new Date());
-  console.log({ start: now, end: props.date });
   let duration = formatDuration(
     intervalToDuration({ start: now, end: props.date })
   );
