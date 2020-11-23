@@ -13,7 +13,7 @@ import add from "date-fns/add";
 import isAfter from "date-fns/isAfter";
 import parseISO from "date-fns/parseISO";
 import formatISO from "date-fns/formatISO";
-
+import useForceUpdate from "./hooks/useForceUpdate";
 const alarmStorageKey = "@alarm";
 const notificationID = "@alarm";
 
@@ -60,6 +60,7 @@ export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
   const [handlerState, setHandlerState] = useState();
   const [alarmTimeAtGestureBegin, setAlarmTimeAtGestureBegin] = useState(null);
+  const forceUpdate = useForceUpdate();
 
   const saveAlarmState = async () => {
     if (alarmState !== null) {
@@ -73,6 +74,7 @@ export default function App() {
       setAlarmTimeAtGestureBegin(alarmState.time || new Date());
     }
 
+    // set the notification at the end of the gesture, cancelling the previous one
     if (
       e.nativeEvent.state === State.END &&
       isAfter(alarmState.time, new Date())
@@ -94,7 +96,6 @@ export default function App() {
     let newTime = add(alarmTimeAtGestureBegin, {
       minutes: e.nativeEvent.translationY / 2,
     });
-    console.log(newTime);
     setAlarmState((state) => {
       return { ...state, time: newTime };
     });
@@ -115,7 +116,6 @@ export default function App() {
 
   // save if alarmstate changes
   useEffect(() => {
-    console.log("Saving alarm state");
     saveAlarmState();
   }, [alarmState]);
 
@@ -126,7 +126,7 @@ export default function App() {
       if (isAfter(new Date(), alarmState && alarmState.time)) {
         setAlarmState((state) => ({ ...state, time: null }));
       } else {
-        setAlarmState((state) => ({ ...state }));
+        forceUpdate();
       }
     }, 1000);
     return () => {
