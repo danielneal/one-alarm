@@ -4,12 +4,13 @@ import { SafeAreaView,StyleSheet, Text, View } from "react-native";
 import * as Svg from "react-native-svg";
 import Clock from "./components/Clock";
 import ClockDigital from "./components/ClockDigital";
-import AlarmEnabled from "./components/AlarmEnabled";
+import AlarmCountdown from "./components/AlarmCountdown";
 import { State, PanGestureHandler } from "react-native-gesture-handler";
 import * as Notifications from "expo-notifications";
 import roundToNearestMinutes from "date-fns/roundToNearestMinutes";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import add from "date-fns/add";
+import isAfter from 'date-fns/isAfter'
 import parseISO from 'date-fns/parseISO'
 import formatISO from 'date-fns/formatISO'
 
@@ -37,6 +38,7 @@ Notifications.setNotificationHandler({
   }),
 });
 
+
 export default function App() {
   const [alarmState, setAlarmState] = useState(null);
   const [handlerState, setHandlerState] = useState();
@@ -63,15 +65,11 @@ export default function App() {
             subtitle: "It's time.",
             sound: "alarm.wav",
           },
-          trigger: {
-            hour:alarmState.time.getHours(),
-            minute:alarmState.time.getMinutes(),
-            repeats:true
-          }
+        trigger: alarmState.time
       });
       if(alarmState.enabled === false) {
         setAlarmState((state)=> {
-          return {...state,enabled:true}
+          return {...state, enabled:true}
         })
       }
     }
@@ -95,7 +93,7 @@ export default function App() {
     const getAlarmFromStorage = async () => {
       const alarmState = await AsyncStorage.getItem(alarmStorageKey)
       const alarmStateParsed = JSON.parse(alarmState)
-      setAlarmState(alarmStateParsed!==null ?
+      setAlarmState(alarmStateParsed !== null ?
                     { time:parseISO(alarmStateParsed.time),
                       enabled:alarmStateParsed.enabled}
                     : { time:roundToNearestMinutes(new Date()),
@@ -118,7 +116,7 @@ export default function App() {
             <>
               <Clock date={alarmState.time}/>
               <ClockDigital date={alarmState.time}/>
-              <AlarmEnabled enabled={alarmState.enabled} onChange={onAlarmEnabledChange}/>
+              <AlarmCountdown date={alarmState.time}/>
             </>
           }
         </View>
