@@ -47,14 +47,13 @@ function serialize(state) {
 
 function deserialize(s) {
   const parsed = JSON.parse(s);
+  console.log(parsed);
   if (parsed) {
-    return { time: parseISO(parsed.time) };
+    return { time: parsed.time && parseISO(parsed.time) };
   } else {
     return null;
   }
 }
-
-AsyncStorage.removeItem(alarmStorageKey);
 
 export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
