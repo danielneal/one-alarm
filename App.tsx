@@ -90,6 +90,19 @@ export default function App() {
     }
   });
 
+  const scheduleNotification = async (time) => {
+    await Notifications.cancelScheduledNotificationAsync(notificationID);
+    await Notifications.scheduleNotificationAsync({
+      identifier: notificationID,
+      content: {
+        title: "One Alarm",
+        subtitle: "It's time.",
+        sound: "alarm.wav",
+      },
+      trigger: time,
+    });
+  };
+
   const onHandlerStateChange = useCallback(async (e) => {
     // capture the alarm time at the beginning of the gesture
     if (e.nativeEvent.state === State.BEGAN) {
@@ -101,16 +114,7 @@ export default function App() {
       e.nativeEvent.state === State.END &&
       isAfter(alarmState.time, new Date())
     ) {
-      await Notifications.cancelScheduledNotificationAsync(notificationID);
-      await Notifications.scheduleNotificationAsync({
-        identifier: notificationID,
-        content: {
-          title: "One Alarm",
-          subtitle: "It's time.",
-          sound: "alarm.wav",
-        },
-        trigger: alarmState.time,
-      });
+      await scheduleNotification(alarmState.time);
     }
   });
 
@@ -156,7 +160,7 @@ export default function App() {
     };
   }, [alarmState]);
 
-  const setAlarmFromText = () => {
+  const setAlarmFromText = async () => {
     let parsedTime;
     console.log(timeText);
     switch (timeText.length) {
@@ -175,12 +179,15 @@ export default function App() {
         break;
     }
     if (isValid(parsedTime)) {
+      let alarmTime = isAfter(parsedTime, new Date())
+        ? parsedTime
+        : add(parsedTime, { days: 1 });
       setAlarmState({
-        time: isAfter(parsedTime, new Date())
-          ? parsedTime
-          : add(parsedTime, { days: 1 }),
+        time: alarmTime,
       });
+      await scheduleNotification(alarmTime);
     }
+    setTimeText("");
     Keyboard.dismiss();
   };
 
