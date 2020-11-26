@@ -36,9 +36,7 @@ export default function NumberPad(props) {
           <Entypo name="squared-cross" size={30} color="black" />
         </TouchableOpacity>
         <NumberButton number="0" onPress={props.onPress} />
-        <TouchableOpacity onPress={props.onEnter}>
-          <Ionicons name="md-return-left" size={30} color="black" />
-        </TouchableOpacity>
+        <View />
       </View>
     </View>
   );

@@ -98,6 +98,7 @@ export default function App() {
 
       // then set the time during gesture to null
       setTimeDuringGesture(null);
+      setTimeText(null);
     }
   });
 
@@ -174,20 +175,23 @@ export default function App() {
     });
   });
 
-  const onNumberPadEnter = useCallback(() => {
-    let parsedText = parse(
-      timeText.padStart(4, "0").slice(-4),
-      "HHmm",
-      new Date()
-    );
-    if (isValid(parsedText)) {
-      if (isAfter(new Date(), parsedText)) {
-        parsedText = add(parsedText, { days: 1 });
+  useEffect(() => {
+    if (timeText !== null) {
+      let parsedText = parse(
+        timeText.padStart(4, "0").slice(-4),
+        "HHmm",
+        new Date()
+      );
+      if (isValid(parsedText)) {
+        if (isAfter(new Date(), parsedText)) {
+          parsedText = add(parsedText, { days: 1 });
+        }
+        setAlarmState({ time: parsedText });
       }
-      setAlarmState({ time: parsedText });
+      setTimeText(timeText.padStart(4, "0").slice(-4));
     }
-    setTimeText(null);
-  });
+    console.log(timeText);
+  }, [timeText]);
 
   const onNumberPadClear = useCallback(() => {
     if (timeText === null) {
@@ -216,7 +220,6 @@ export default function App() {
               <AlarmCountdown date={alarmState.time} />
               <NumberPad
                 onPress={onNumberPadPress}
-                onEnter={onNumberPadEnter}
                 onClear={onNumberPadClear}
               />
             </>
