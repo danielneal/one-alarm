@@ -73,10 +73,9 @@ function deserialize(s) {
 export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
   const [timeDuringGesture, setTimeDuringGesture] = useState(null);
-  const [timeDuringEntry, setTimeDuringEntry] = useState(null);
   const [handlerState, setHandlerState] = useState();
   const [alarmTimeAtGestureBegin, setAlarmTimeAtGestureBegin] = useState(null);
-  const [timeText, setTimeText] = useState("");
+  const [timeText, setTimeText] = useState(null);
   const forceUpdate = useForceUpdate();
 
   const onHandlerStateChange = useCallback(async (e) => {
@@ -161,38 +160,35 @@ export default function App() {
 
   const onNumberPadPress = useCallback((n) => {
     setTimeText((t) => {
-      return t + n;
+      if (t === null) {
+        return n;
+      } else {
+        return t + n;
+      }
     });
   });
 
   const onNumberPadEnter = useCallback(() => {
-    setAlarmState({ time: timeDuringEntry });
-    setTimeText("");
+    let parsedText = parse(
+      timeText.padStart(4, "0").slice(-4),
+      "HHmm",
+      new Date()
+    );
+    if (isValid(parsedText)) {
+      if (isAfter(new Date(), parsedText)) {
+        parsedText = add(parsedText, { days: 1 });
+      }
+      setAlarmState({ time: parsedText });
+    }
+    setTimeText(null);
   });
 
   const onNumberPadClear = useCallback(() => {
-    setTimeText("");
-    setTimeDuringEntry(null);
-  });
-
-  useEffect(() => {
-    if (timeText.length > 0) {
-      let parsedText = parse(
-        timeText.padStart(4, "0").slice(-4),
-        "HHmm",
-        new Date()
-      );
-      if (isValid(parsedText)) {
-        if (isAfter(new Date(), parsedText)) {
-          parsedText = add(parsedText, { days: 1 });
-        }
-        setTimeDuringEntry(parsedText);
-      } else {
-        setTimeDuringEntry(null);
-        setTimeText("");
-      }
+    if (timeText === null) {
+      setAlarmState({ time: null });
     }
-  }, [timeText]);
+    setTimeText(null);
+  });
 
   const renderTime = timeDuringGesture || alarmState.time || new Date();
 
@@ -207,7 +203,7 @@ export default function App() {
           {renderTime && (
             <>
               <Clock date={renderTime} />
-              <ClockDigital date={timeDuringEntry || renderTime} />
+              <ClockDigital dateString={timeText} date={renderTime} />
               <AlarmCountdown date={renderTime} />
               <NumberPad
                 onPress={onNumberPadPress}
