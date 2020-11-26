@@ -14,6 +14,7 @@ import * as Svg from "react-native-svg";
 import Clock from "./components/Clock";
 import ClockDigital from "./components/ClockDigital";
 import AlarmCountdown from "./components/AlarmCountdown";
+import NumberPad from "./components/NumberPad";
 import {
   State,
   PanGestureHandler,
@@ -72,6 +73,7 @@ function deserialize(s) {
 export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
   const [timeDuringGesture, setTimeDuringGesture] = useState();
+  const [timeDuringEntry, setTimeDuringEntry] = useState();
   const [handlerState, setHandlerState] = useState();
   const [alarmTimeAtGestureBegin, setAlarmTimeAtGestureBegin] = useState(null);
   const [timeText, setTimeText] = useState();
@@ -157,38 +159,8 @@ export default function App() {
     };
   }, [alarmState]);
 
-  const setAlarmFromText = async () => {
-    let parsedTime;
-    console.log(timeText);
-    switch (timeText.length) {
-      case 1:
-        parsedTime = parse(timeText, "H", new Date());
-        console.log(parsedTime);
-        break;
-      case 2:
-        parsedTime = parse(timeText, "HH", new Date());
-        break;
-      case 3:
-        parsedTime = parse(timeText, "Hmm", new Date());
-        break;
-      case 4:
-        parsedTime = parse(timeText, "HHmm", new Date());
-        break;
-    }
-    if (isValid(parsedTime)) {
-      let alarmTime = isAfter(parsedTime, new Date())
-        ? parsedTime
-        : add(parsedTime, { days: 1 });
-      setAlarmState({
-        time: alarmTime,
-      });
-      await scheduleNotification(alarmTime);
-    }
-    setTimeText("");
-    Keyboard.dismiss();
-  };
-
-  let renderTime = timeDuringGesture || alarmState.time || new Date();
+  let renderTime =
+    timeDuringEntry || timeDuringGesture || alarmState.time || new Date();
 
   // if alarm time is null, render the current time
   return (
@@ -203,6 +175,7 @@ export default function App() {
               <Clock date={renderTime} />
               <ClockDigital date={renderTime} />
               <AlarmCountdown date={renderTime} />
+              <NumberPad />
             </>
           )}
         </View>
