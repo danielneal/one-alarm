@@ -71,37 +71,11 @@ function deserialize(s) {
 
 export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
+  const [timeDuringGesture, setTimeDuringGesture] = useState();
   const [handlerState, setHandlerState] = useState();
   const [alarmTimeAtGestureBegin, setAlarmTimeAtGestureBegin] = useState(null);
   const [timeText, setTimeText] = useState();
   const forceUpdate = useForceUpdate();
-  const textInput = useRef();
-  const panGestureHandler = useRef();
-
-  const saveAlarmState = async () => {
-    if (alarmState !== null) {
-      AsyncStorage.setItem(alarmStorageKey, serialize(alarmState));
-    }
-  };
-
-  const onTapHandlerStateChange = useCallback((e) => {
-    if (e.nativeEvent.state === State.ACTIVE) {
-      textInput.current.focus();
-    }
-  });
-
-  const scheduleNotification = async (time) => {
-    await Notifications.cancelScheduledNotificationAsync(notificationID);
-    await Notifications.scheduleNotificationAsync({
-      identifier: notificationID,
-      content: {
-        title: "One Alarm",
-        subtitle: "It's time.",
-        sound: "alarm.wav",
-      },
-      trigger: time,
-    });
-  };
 
   const onHandlerStateChange = useCallback(async (e) => {
     // capture the alarm time at the beginning of the gesture
@@ -109,12 +83,14 @@ export default function App() {
       setAlarmTimeAtGestureBegin(alarmState.time || new Date());
     }
 
-    // set the notification at the end of the gesture, cancelling the previous one
-    if (
-      e.nativeEvent.state === State.END &&
-      isAfter(alarmState.time, new Date())
-    ) {
-      await scheduleNotification(alarmState.time);
+    // set the alarm state at the end of the gesture
+    if (e.nativeEvent.state === State.END) {
+      setAlarmState((state) => {
+        return { ...state, time: timeDuringGesture };
+      });
+
+      // then set the time during gesture to null
+      setTimeDuringGesture(null);
     }
   });
 
@@ -122,9 +98,7 @@ export default function App() {
     let newTime = add(alarmTimeAtGestureBegin, {
       minutes: e.nativeEvent.translationY / 2,
     });
-    setAlarmState((state) => {
-      return { ...state, time: newTime };
-    });
+    setTimeDuringGesture(newTime);
   });
 
   // initialize alarm state from storage on mount
@@ -140,13 +114,36 @@ export default function App() {
     getAlarmFromStorage();
   }, []);
 
-  // save if alarmstate changes
+  const saveAlarmState = async () => {
+    if (alarmState !== null) {
+      AsyncStorage.setItem(alarmStorageKey, serialize(alarmState));
+    }
+  };
+
+  const scheduleNotification = async () => {
+    await Notifications.cancelScheduledNotificationAsync(notificationID);
+    if (alarmState.time !== null) {
+      await Notifications.scheduleNotificationAsync({
+        identifier: notificationID,
+        content: {
+          title: "One Alarm",
+          subtitle: "It's time.",
+          sound: "alarm.wav",
+        },
+        trigger: alarmState.time,
+      });
+    }
+    return null;
+  };
+
+  // save and unschedule/reschedule alarm notification if alarmstate changes
   useEffect(() => {
     saveAlarmState();
+    scheduleNotification();
   }, [alarmState]);
 
-  // set alarm time to null if current time > alarm time
-
+  // check every second, and set alarm time to null if current time > alarm time
+  // then the clock will show the current time if no alarm is set.
   useEffect(() => {
     let intervalId = setInterval(() => {
       if (isAfter(new Date(), alarmState && alarmState.time)) {
@@ -191,40 +188,25 @@ export default function App() {
     Keyboard.dismiss();
   };
 
-  let renderTime = alarmState.time === null ? new Date() : alarmState.time;
+  let renderTime = timeDuringGesture || alarmState.time || new Date();
+
   // if alarm time is null, render the current time
   return (
     <SafeAreaView>
-      <TapGestureHandler
-        onHandlerStateChange={onTapHandlerStateChange}
-        waitFor={panGestureHandler}
+      <PanGestureHandler
+        onHandlerStateChange={onHandlerStateChange}
+        onGestureEvent={onGestureEvent}
       >
-        <PanGestureHandler
-          onHandlerStateChange={onHandlerStateChange}
-          onGestureEvent={onGestureEvent}
-          ref={panGestureHandler}
-        >
-          <View style={styles.container}>
-            {renderTime && (
-              <>
-                <Clock date={renderTime} />
-                <ClockDigital date={renderTime} />
-                <AlarmCountdown date={renderTime} />
-                <TextInput
-                  ref={textInput}
-                  style={styles.textInput}
-                  keyboardType="number-pad"
-                  inputAccessoryViewID="inputAccessory"
-                  onChangeText={(s) => setTimeText(s)}
-                />
-                <InputAccessoryView nativeID="inputAccessory">
-                  <Button title="Done" onPress={setAlarmFromText} />
-                </InputAccessoryView>
-              </>
-            )}
-          </View>
-        </PanGestureHandler>
-      </TapGestureHandler>
+        <View style={styles.container}>
+          {renderTime && (
+            <>
+              <Clock date={renderTime} />
+              <ClockDigital date={renderTime} />
+              <AlarmCountdown date={renderTime} />
+            </>
+          )}
+        </View>
+      </PanGestureHandler>
     </SafeAreaView>
   );
 }
@@ -234,10 +216,5 @@ const styles = StyleSheet.create({
     height: "100%",
     alignItems: "center",
     justifyContent: "flex-start",
-  },
-  textInput: {
-    width: "100%",
-    backgroundColor: "red",
-    height: 20,
   },
 });
