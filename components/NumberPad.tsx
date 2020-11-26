@@ -32,11 +32,11 @@ export default function NumberPad(props) {
         <NumberButton number="9" onPress={props.onPress} />
       </View>
       <View style={styles.row}>
-        <TouchableOpacity onPress={props.onClear}>
+        <TouchableOpacity style={styles.button} onPress={props.onClear}>
           <Entypo name="squared-cross" size={30} color="black" />
         </TouchableOpacity>
         <NumberButton number="0" onPress={props.onPress} />
-        <View />
+        <View style={styles.button} />
       </View>
     </View>
   );
@@ -50,8 +50,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   button: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+    width: 45,
+    height: 45,
     alignItems: "center",
     justifyContent: "center",
   },
