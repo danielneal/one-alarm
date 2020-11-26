@@ -203,7 +203,7 @@ export default function App() {
           {renderTime && (
             <>
               <Clock date={renderTime} />
-              <ClockDigital dateString={timeText} date={renderTime} />
+              <ClockDigital timeText={timeText} date={renderTime} />
               <AlarmCountdown date={renderTime} />
               <NumberPad
                 onPress={onNumberPadPress}

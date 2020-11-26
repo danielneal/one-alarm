@@ -9,9 +9,9 @@ export default function ClockDigital(props) {
   let hours = formatTimePart(props.date.getHours());
   let minutes = formatTimePart(props.date.getMinutes());
   //override hours / minutes if we are entering text
-  if (props.dateString !== null) {
-    hours = props.dateString.slice(-4, -2).padStart(2, "0");
-    minutes = props.dateString.slice(-2).padStart(2, "0");
+  if (props.timeText !== null) {
+    hours = props.timeText.slice(-4, -2).padStart(2, "0");
+    minutes = props.timeText.slice(-2).padStart(2, "0");
   }
   return (
     <View style={styles.container}>
