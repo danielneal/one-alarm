@@ -7,9 +7,11 @@ import add from "date-fns/add";
 
 export default function AlarmCountdown(props) {
   let [now, setNow] = useState(new Date());
-  let duration = formatDuration(
-    intervalToDuration({ start: now, end: props.date })
-  );
+
+  let duration = props.date
+    ? formatDuration(intervalToDuration({ start: now, end: props.date }))
+    : null;
+
   useEffect(() => {
     let intervalId = setInterval(() => {
       setNow(new Date());
@@ -21,7 +23,7 @@ export default function AlarmCountdown(props) {
 
   return (
     <View style={styles.container}>
-      {isAfter(props.date, add(now, { seconds: 1 })) ? (
+      {duration && isAfter(props.date, add(now, { seconds: 1 })) ? (
         <Text style={styles.text}>Alarm in {duration}</Text>
       ) : null}
     </View>

@@ -87,7 +87,13 @@ export default function App() {
     // set the alarm state at the end of the gesture
     if (e.nativeEvent.state === State.END) {
       setAlarmState((state) => {
-        return { ...state, time: timeDuringGesture };
+        let time = isAfter(new Date(), timeDuringGesture)
+          ? add(timeDuringGesture, { days: 1 })
+          : timeDuringGesture;
+        time = isAfter(time, add(new Date(), { days: 1 }))
+          ? add(time, { days: -1 })
+          : time;
+        return { ...state, time: time };
       });
 
       // then set the time during gesture to null
@@ -190,7 +196,7 @@ export default function App() {
     setTimeText(null);
   });
 
-  const renderTime = timeDuringGesture || alarmState.time || new Date();
+  const renderTime = alarmState.time || new Date();
 
   // if alarm time is null, render the current time
   return (
@@ -202,9 +208,12 @@ export default function App() {
         <View style={styles.container}>
           {renderTime && (
             <>
-              <Clock date={renderTime} />
-              <ClockDigital timeText={timeText} date={renderTime} />
-              <AlarmCountdown date={renderTime} />
+              <Clock date={timeDuringGesture || renderTime} />
+              <ClockDigital
+                timeText={timeText}
+                date={timeDuringGesture || renderTime}
+              />
+              <AlarmCountdown date={alarmState.time} />
               <NumberPad
                 onPress={onNumberPadPress}
                 onEnter={onNumberPadEnter}
