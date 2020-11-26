@@ -72,11 +72,11 @@ function deserialize(s) {
 
 export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
-  const [timeDuringGesture, setTimeDuringGesture] = useState();
-  const [timeDuringEntry, setTimeDuringEntry] = useState();
+  const [timeDuringGesture, setTimeDuringGesture] = useState(null);
+  const [timeDuringEntry, setTimeDuringEntry] = useState(null);
   const [handlerState, setHandlerState] = useState();
   const [alarmTimeAtGestureBegin, setAlarmTimeAtGestureBegin] = useState(null);
-  const [timeText, setTimeText] = useState();
+  const [timeText, setTimeText] = useState("");
   const forceUpdate = useForceUpdate();
 
   const onHandlerStateChange = useCallback(async (e) => {
@@ -159,8 +159,42 @@ export default function App() {
     };
   }, [alarmState]);
 
-  let renderTime =
-    timeDuringEntry || timeDuringGesture || alarmState.time || new Date();
+  const onNumberPadPress = useCallback((n) => {
+    setTimeText((t) => {
+      return t + n;
+    });
+  });
+
+  const onNumberPadEnter = useCallback(() => {
+    setAlarmState({ time: timeDuringEntry });
+    setTimeText("");
+  });
+
+  const onNumberPadClear = useCallback(() => {
+    setTimeText("");
+    setTimeDuringEntry(null);
+  });
+
+  useEffect(() => {
+    if (timeText.length > 0) {
+      let parsedText = parse(
+        timeText.padStart(4, "0").slice(-4),
+        "HHmm",
+        new Date()
+      );
+      if (isValid(parsedText)) {
+        if (isAfter(new Date(), parsedText)) {
+          parsedText = add(parsedText, { days: 1 });
+        }
+        setTimeDuringEntry(parsedText);
+      } else {
+        setTimeDuringEntry(null);
+        setTimeText("");
+      }
+    }
+  }, [timeText]);
+
+  const renderTime = timeDuringGesture || alarmState.time || new Date();
 
   // if alarm time is null, render the current time
   return (
@@ -173,9 +207,13 @@ export default function App() {
           {renderTime && (
             <>
               <Clock date={renderTime} />
-              <ClockDigital date={renderTime} />
+              <ClockDigital date={timeDuringEntry || renderTime} />
               <AlarmCountdown date={renderTime} />
-              <NumberPad />
+              <NumberPad
+                onPress={onNumberPadPress}
+                onEnter={onNumberPadEnter}
+                onClear={onNumberPadClear}
+              />
             </>
           )}
         </View>

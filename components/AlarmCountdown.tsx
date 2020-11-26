@@ -20,7 +20,7 @@ export default function AlarmCountdown(props) {
   }, []);
 
   return (
-    <View>
+    <View style={styles.container}>
       {isAfter(props.date, add(now, { seconds: 1 })) ? (
         <Text style={styles.text}>Alarm in {duration}</Text>
       ) : null}
@@ -29,6 +29,10 @@ export default function AlarmCountdown(props) {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    height: 30,
+    justifyContent: "center",
+  },
   text: {
     fontSize: 20,
   },

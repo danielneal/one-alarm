@@ -1,28 +1,44 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Entypo } from "@expo/vector-icons";
 
+function NumberButton(props) {
+  return (
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => props.onPress(props.number)}
+    >
+      <Text style={styles.text}>{props.number}</Text>
+    </TouchableOpacity>
+  );
+}
 export default function NumberPad(props) {
   return (
     <View style={styles.container}>
       <View style={styles.row}>
-        <Text style={styles.text}>1</Text>
-        <Text style={styles.text}>2</Text>
-        <Text style={styles.text}>3</Text>
+        <NumberButton number="1" onPress={props.onPress} />
+        <NumberButton number="2" onPress={props.onPress} />
+        <NumberButton number="3" onPress={props.onPress} />
       </View>
       <View style={styles.row}>
-        <Text style={styles.text}>4</Text>
-        <Text style={styles.text}>5</Text>
-        <Text style={styles.text}>6</Text>
+        <NumberButton number="4" onPress={props.onPress} />
+        <NumberButton number="5" onPress={props.onPress} />
+        <NumberButton number="6" onPress={props.onPress} />
       </View>
       <View style={styles.row}>
-        <Text style={styles.text}>7</Text>
-        <Text style={styles.text}>8</Text>
-        <Text style={styles.text}>9</Text>
+        <NumberButton number="7" onPress={props.onPress} />
+        <NumberButton number="8" onPress={props.onPress} />
+        <NumberButton number="9" onPress={props.onPress} />
       </View>
       <View style={styles.row}>
-        <View />
-        <Text style={styles.text}>0</Text>
-        <View />
+        <TouchableOpacity onPress={props.onClear}>
+          <Entypo name="squared-cross" size={30} color="black" />
+        </TouchableOpacity>
+        <NumberButton number="0" onPress={props.onPress} />
+        <TouchableOpacity onPress={props.onEnter}>
+          <Ionicons name="md-return-left" size={30} color="black" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -35,12 +51,20 @@ const styles = StyleSheet.create({
     padding: 30,
     justifyContent: "space-between",
   },
+  button: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   text: {
     fontSize: 36,
     fontWeight: "bold",
+    textAlign: "center",
   },
   row: {
     flexDirection: "row",
+    alignItems: "center",
     justifyContent: "space-around",
   },
 });
