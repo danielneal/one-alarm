@@ -32,7 +32,7 @@ export default function AlarmCountdown(props) {
 
 const styles = StyleSheet.create({
   container: {
-    height: 30,
+    minHeight: 30,
     justifyContent: "center",
   },
   text: {

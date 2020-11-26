@@ -16,11 +16,29 @@ export default function ClockDigital(props) {
   return (
     <View style={styles.container}>
       <View style={styles.digitsView}>
-        <Text style={[styles.text, styles.hourText]}>{hours}</Text>
+        <Text
+          style={[
+            styles.text,
+            styles.hourText,
+            !props.validTimeText && styles.invalidText,
+          ]}
+        >
+          {hours}
+        </Text>
       </View>
-      <Text style={styles.text}>:</Text>
+      <Text style={[styles.text, !props.validTimeText && styles.invalidText]}>
+        :
+      </Text>
       <View style={styles.digitsView}>
-        <Text style={[styles.text, styles.minuteText]}>{minutes}</Text>
+        <Text
+          style={[
+            styles.text,
+            styles.minuteText,
+            !props.validTimeText && styles.invalidText,
+          ]}
+        >
+          {minutes}
+        </Text>
       </View>
     </View>
   );
@@ -43,5 +61,8 @@ const styles = StyleSheet.create({
   },
   minuteText: {
     textAlign: "left",
+  },
+  invalidText: {
+    color: "#AAA",
   },
 });

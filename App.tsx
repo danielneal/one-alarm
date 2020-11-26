@@ -174,19 +174,17 @@ export default function App() {
       }
     });
   });
+  const parsedText =
+    timeText && parse(timeText.padStart(4, "0").slice(-4), "HHmm", new Date());
 
   useEffect(() => {
     if (timeText !== null) {
-      let parsedText = parse(
-        timeText.padStart(4, "0").slice(-4),
-        "HHmm",
-        new Date()
-      );
       if (isValid(parsedText)) {
         if (isAfter(new Date(), parsedText)) {
-          parsedText = add(parsedText, { days: 1 });
+          setAlarmState({ time: add(parsedText, { days: 1 }) });
+        } else {
+          setAlarmState({ time: parsedText });
         }
-        setAlarmState({ time: parsedText });
       }
       setTimeText(timeText.padStart(4, "0").slice(-4));
     }
@@ -200,6 +198,7 @@ export default function App() {
     setTimeText(null);
   });
 
+  const validTimeText = timeText === null || isValid(parsedText);
   const renderTime = alarmState.time || new Date();
 
   // if alarm time is null, render the current time
@@ -214,6 +213,7 @@ export default function App() {
             <>
               <Clock date={timeDuringGesture || renderTime} />
               <ClockDigital
+                validTimeText={validTimeText}
                 timeText={timeText}
                 date={timeDuringGesture || renderTime}
               />
@@ -234,6 +234,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
   },
 });
