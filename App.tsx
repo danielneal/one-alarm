@@ -72,6 +72,11 @@ function deserialize(s) {
   }
 }
 
+// function to parse text
+function parseText(text) {
+  return parse(text.padStart(4, "0"), "HHmm", new Date());
+}
+
 export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
   const [timeDuringGesture, setTimeDuringGesture] = useState(null);
@@ -133,6 +138,7 @@ export default function App() {
     }
   };
 
+  // clear old notification and schedule new one
   const scheduleNotification = async () => {
     await Notifications.cancelScheduledNotificationAsync(notificationID);
     if (alarmState.time !== null) {
@@ -170,12 +176,8 @@ export default function App() {
     };
   }, [alarmState]);
 
-  const parseText = (text) => {
-    return parse(text.padStart(4, "0"), "HHmm", new Date());
-  };
-
+  // function to set alarm time from text, by parsing it
   const maybeSetAlarmFromText = (text) => {
-    console.log(text);
     let parsedText = parseText(text);
     if (isValid(parsedText)) {
       setTimeText(null);
@@ -187,6 +189,8 @@ export default function App() {
       setIsSettingTime(false);
     }
   };
+
+  // function to set the time text from presses on the number pad
   const onNumberPadPress = useCallback((n) => {
     setTimeText((t) => {
       if (t === null) {
