@@ -170,6 +170,23 @@ export default function App() {
     };
   }, [alarmState]);
 
+  const parseText = (text) => {
+    return parse(text.padStart(4, "0"), "HHmm", new Date());
+  };
+
+  const maybeSetAlarmFromText = (text) => {
+    console.log(text);
+    let parsedText = parseText(text);
+    if (isValid(parsedText)) {
+      setTimeText(null);
+      setAlarmState({
+        time: isAfter(parsedText, new Date())
+          ? parsedText
+          : add(parsedText, { days: 1 }),
+      });
+      setIsSettingTime(false);
+    }
+  };
   const onNumberPadPress = useCallback((n) => {
     setTimeText((t) => {
       if (t === null) {
@@ -177,29 +194,27 @@ export default function App() {
       } else if (t.length === 4) {
         return t;
       } else {
-        return t + n;
+        let newText = t + n;
+        console.log(newText);
+        if (newText.length === 4) {
+          console.log("here");
+          maybeSetAlarmFromText(newText);
+        }
+        return newText;
       }
     });
   });
 
-  const parsedText =
-    timeText && parse(timeText.padStart(4, "0"), "HHmm", new Date());
+  const parsedText = timeText && parseText(timeText);
 
   const onNumberPadEnter = () => {
-    setTimeText(null);
-    setAlarmState({
-      time: isAfter(parsedText, new Date())
-        ? parsedText
-        : add(parsedText, { days: 1 }),
-    });
-    setIsSettingTime(false);
+    maybeSetAlarmFromText(timeText);
   };
+
   const onNumberPadClear = useCallback(() => {
     setTimeText(null);
     setIsSettingTime(false);
   });
-
-  console.log(timeText);
 
   const validTimeText = isValid(parsedText);
   const renderTime = alarmState.time || new Date();
