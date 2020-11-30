@@ -15,6 +15,7 @@ import Clock from "./components/Clock";
 import ClockDigital from "./components/ClockDigital";
 import AlarmCountdown from "./components/AlarmCountdown";
 import NumberPad from "./components/NumberPad";
+import IconButton from "./components/IconButton";
 import {
   State,
   PanGestureHandler,
@@ -30,6 +31,7 @@ import parseISO from "date-fns/parseISO";
 import parse from "date-fns/parse";
 import formatISO from "date-fns/formatISO";
 import useForceUpdate from "./hooks/useForceUpdate";
+import { Ionicons, Entypo } from "@expo/vector-icons";
 const alarmStorageKey = "@alarm";
 const notificationID = "@alarm";
 
@@ -76,6 +78,8 @@ export default function App() {
   const [handlerState, setHandlerState] = useState();
   const [alarmTimeAtGestureBegin, setAlarmTimeAtGestureBegin] = useState(null);
   const [timeText, setTimeText] = useState(null);
+  const [isSettingTime, setIsSettingTime] = useState(false);
+
   const forceUpdate = useForceUpdate();
 
   const onHandlerStateChange = useCallback(async (e) => {
@@ -99,6 +103,7 @@ export default function App() {
       // then set the time during gesture to null
       setTimeDuringGesture(null);
       setTimeText(null);
+      setIsSettingTime(false);
     }
   });
 
@@ -169,36 +174,34 @@ export default function App() {
     setTimeText((t) => {
       if (t === null) {
         return n;
+      } else if (t.length === 4) {
+        return t;
       } else {
         return t + n;
       }
     });
   });
+
   const parsedText =
-    timeText && parse(timeText.padStart(4, "0").slice(-4), "HHmm", new Date());
+    timeText && parse(timeText.padStart(4, "0"), "HHmm", new Date());
 
-  useEffect(() => {
-    if (timeText !== null) {
-      if (isValid(parsedText)) {
-        if (isAfter(new Date(), parsedText)) {
-          setAlarmState({ time: add(parsedText, { days: 1 }) });
-        } else {
-          setAlarmState({ time: parsedText });
-        }
-      }
-      setTimeText(timeText.padStart(4, "0").slice(-4));
-    }
-    console.log(timeText);
-  }, [timeText]);
-
-  const onNumberPadClear = useCallback(() => {
-    if (timeText === null) {
-      setAlarmState({ time: null });
-    }
+  const onNumberPadEnter = () => {
     setTimeText(null);
+    setAlarmState({
+      time: isAfter(parsedText, new Date())
+        ? parsedText
+        : add(parsedText, { days: 1 }),
+    });
+    setIsSettingTime(false);
+  };
+  const onNumberPadClear = useCallback(() => {
+    setTimeText(null);
+    setIsSettingTime(false);
   });
 
-  const validTimeText = timeText === null || isValid(parsedText);
+  console.log(timeText);
+
+  const validTimeText = isValid(parsedText);
   const renderTime = alarmState.time || new Date();
 
   // if alarm time is null, render the current time
@@ -213,15 +216,43 @@ export default function App() {
             <>
               <Clock date={timeDuringGesture || renderTime} />
               <ClockDigital
-                validTimeText={validTimeText}
                 timeText={timeText}
                 date={timeDuringGesture || renderTime}
               />
               <AlarmCountdown date={alarmState.time} />
-              <NumberPad
-                onPress={onNumberPadPress}
-                onClear={onNumberPadClear}
-              />
+              {isSettingTime ? (
+                <NumberPad
+                  enterEnabled={validTimeText}
+                  onEnter={onNumberPadEnter}
+                  onPress={onNumberPadPress}
+                  onClear={onNumberPadClear}
+                />
+              ) : (
+                <View style={styles.buttonsContainer}>
+                  <View style={styles.buttonContainer}>
+                    <IconButton
+                      icon={
+                        <Ionicons name="md-alarm" size={36} color="white" />
+                      }
+                      enabled={true}
+                      onPress={() => setIsSettingTime(true)}
+                      text={alarmState.time === null ? "Set" : "Change"}
+                    />
+                  </View>
+                  <View style={styles.buttonContainer}>
+                    <IconButton
+                      icon={
+                        <Entypo name="squared-cross" size={36} color="white" />
+                      }
+                      enabled={alarmState.time !== null}
+                      onPress={() => {
+                        setAlarmState({ time: null });
+                      }}
+                      text="Clear"
+                    />
+                  </View>
+                </View>
+              )}
             </>
           )}
         </View>
@@ -233,7 +264,17 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     height: "100%",
+    paddingTop: 16,
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "flex-start",
+  },
+  buttonsContainer: {
+    width: "100%",
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonContainer: {
+    marginBottom: 16,
   },
 });

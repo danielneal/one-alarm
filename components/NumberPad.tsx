@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Entypo } from "@expo/vector-icons";
+import { Entypo, MaterialIcons } from "@expo/vector-icons";
 
 function NumberButton(props) {
   return (
@@ -36,7 +36,17 @@ export default function NumberPad(props) {
           <Entypo name="squared-cross" size={30} color="black" />
         </TouchableOpacity>
         <NumberButton number="0" onPress={props.onPress} />
-        <View style={styles.button} />
+        <TouchableOpacity
+          style={styles.button}
+          disabled={!props.enterEnabled}
+          onPress={props.enterEnabled && props.onEnter}
+        >
+          <MaterialIcons
+            name="keyboard-return"
+            size={30}
+            color={props.enterEnabled ? "black" : "#ddd"}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
