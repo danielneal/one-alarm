@@ -6,7 +6,12 @@ export default function IconButton(props) {
     <TouchableOpacity
       disabled={!props.enabled}
       onPress={props.enabled && props.onPress}
-      style={[styles.container, props.enabled && styles.enabledContainer]}
+      style={[
+        styles.container,
+        props.enabled && styles.enabledContainer,
+        props.enabled &&
+          props.tintColor && { backgroundColor: props.tintColor },
+      ]}
     >
       <View style={styles.iconContainer}>{props.icon}</View>
       <Text style={styles.text}>{props.text}</Text>
