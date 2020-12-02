@@ -1,45 +1,47 @@
-import React from 'react'
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 function formatTimePart(n) {
-  return n.toString().padStart(2,"0")
+  return n.toString().padStart(2, "0");
 }
 
 export default function ClockDigital(props) {
+  let hours = formatTimePart(props.date.getHours());
+  let minutes = formatTimePart(props.date.getMinutes());
+  //override hours / minutes if we are entering text
+  if (props.timeText !== null) {
+    hours = props.timeText.slice(-4, -2).padStart(2, "0");
+    minutes = props.timeText.slice(-2).padStart(2, "0");
+  }
   return (
     <View style={styles.container}>
       <View style={styles.digitsView}>
-        <Text style={[styles.text,styles.hourText]}>
-          {formatTimePart(props.date.getHours())}
-        </Text>
+        <Text style={[styles.text, styles.hourText]}>{hours}</Text>
       </View>
-      <Text style={styles.text}>:</Text>
+      <Text style={[styles.text]}>:</Text>
       <View style={styles.digitsView}>
-        <Text style={[styles.text,styles.minuteText]}>
-          {formatTimePart(props.date.getMinutes())}
-        </Text>
+        <Text style={[styles.text, styles.minuteText]}>{minutes}</Text>
       </View>
     </View>
-  )
+  );
 }
-
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection:"row",
-    alignItems:"center",
+    flexDirection: "row",
+    alignItems: "center",
   },
   digitsView: {
-    flex:1
+    flex: 1,
   },
   text: {
-    fontSize:36,
-    fontWeight:"bold"
+    fontSize: 36,
+    fontWeight: "bold",
   },
   hourText: {
-    textAlign:"right",
+    textAlign: "right",
   },
   minuteText: {
-    textAlign:"left",
-  }
-})
+    textAlign: "left",
+  },
+});
