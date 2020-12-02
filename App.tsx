@@ -9,6 +9,8 @@ import {
   InputAccessoryView,
   Button,
   Keyboard,
+  Linking,
+  TouchableOpacity,
 } from "react-native";
 import * as Svg from "react-native-svg";
 import Clock from "./components/Clock";
@@ -73,6 +75,12 @@ function deserialize(s) {
 // function to parse text
 function parseText(text) {
   return parse(text.padStart(4, "0"), "HHmm", new Date());
+}
+
+function showPrivacyPolicy() {
+  Linking.openURL(
+    "https://s3.eu-west-2.amazonaws.com/one-alarm.co.uk/privacy-policy.html"
+  );
 }
 
 export default function App() {
@@ -231,6 +239,14 @@ export default function App() {
             )}
           </>
         )}
+        <TouchableOpacity
+          style={styles.privacyPolicyButton}
+          onPress={() => {
+            showPrivacyPolicy();
+          }}
+        >
+          <Text>Privacy Policy</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -251,5 +267,8 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginBottom: 16,
+  },
+  privacyPolicyButton: {
+    padding: 16,
   },
 });
