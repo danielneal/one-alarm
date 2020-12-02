@@ -19,6 +19,7 @@ import IconButton from "./components/IconButton";
 import * as Notifications from "expo-notifications";
 import roundToNearestMinutes from "date-fns/roundToNearestMinutes";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SplashScreen from "expo-splash-screen";
 import add from "date-fns/add";
 import isAfter from "date-fns/isAfter";
 import isValid from "date-fns/isValid";
@@ -29,6 +30,8 @@ import useForceUpdate from "./hooks/useForceUpdate";
 import { Ionicons, Entypo } from "@expo/vector-icons";
 const alarmStorageKey = "@alarm";
 const notificationID = "@alarm";
+
+SplashScreen.preventAutoHideAsync();
 
 async function requestPermissionsAsync() {
   return await Notifications.requestPermissionsAsync({
@@ -76,18 +79,23 @@ export default function App() {
   const [alarmState, setAlarmState] = useState({ time: null });
   const [timeText, setTimeText] = useState(null);
   const [isSettingTime, setIsSettingTime] = useState(false);
-
   const forceUpdate = useForceUpdate();
 
   // initialize alarm state from storage on mount
   useEffect(() => {
     const getAlarmFromStorage = async () => {
       const alarmState = await AsyncStorage.getItem(alarmStorageKey);
-      const parsedAlarmState = deserialize(alarmState);
       const defaultAlarmState = { time: null };
+      let parsedAlarmState = deserialize(alarmState);
+      // if we deserialize, but the current time is after the alarm time,
+      // then set the alarm time to null
+      if (isAfter(new Date(), parsedAlarmState && parsedAlarmState.time)) {
+        parsedAlarmState = null;
+      }
       setAlarmState(
         parsedAlarmState === null ? defaultAlarmState : parsedAlarmState
       );
+      SplashScreen.hideAsync();
     };
     getAlarmFromStorage();
   }, []);
