@@ -159,8 +159,9 @@ export default function Clock(props) {
 
 const styles = StyleSheet.create({
   container: {
-    height: "30%",
+    flex: 1,
     width: "60%",
+    maxWidth: 450,
   },
   numberView: {
     position: "absolute",

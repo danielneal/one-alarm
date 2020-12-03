@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     height: "100%",
     paddingTop: 32,
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "flex-end",
   },
   buttonsContainer: {
     width: "100%",
