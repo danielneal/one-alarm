@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import * as Svg from "react-native-svg";
 
+function range(n) {
+  return [...Array(n).keys()];
+}
+
 export default function Clock(props) {
   const [layout, setLayout] = useState({});
   const minutes = props.date.getMinutes();
@@ -60,68 +64,7 @@ export default function Clock(props) {
     : null;
 
   const clockTicks = showFace
-    ? [
-        0,
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        21,
-        22,
-        23,
-        24,
-        25,
-        26,
-        27,
-        28,
-        29,
-        30,
-        31,
-        32,
-        33,
-        34,
-        35,
-        36,
-        37,
-        38,
-        39,
-        40,
-        41,
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        50,
-        51,
-        52,
-        53,
-        54,
-        55,
-        56,
-        57,
-        58,
-        59,
-      ].map((i) => {
+    ? range(60).map((i) => {
         let angleRadians = (2 * Math.PI * i) / 60;
         let x1 = centerX + tickRadiusInner * Math.sin(angleRadians);
         let y1 = centerY + tickRadiusInner * Math.cos(angleRadians);
