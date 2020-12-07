@@ -86,6 +86,7 @@ export default function Clock(props) {
     : null;
   return (
     <View
+      testID="clockface"
       style={styles.container}
       onLayout={(e) => {
         setLayout(e.nativeEvent.layout);

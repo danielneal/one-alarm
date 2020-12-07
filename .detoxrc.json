@@ -1,8 +1,9 @@
 {
   "testRunner": "jest",
   "runnerConfig": "e2e/config.json",
+  "uiHierarchy": "enabled",
   "configurations": {
-    "ios": {
+    "ios.sim.debug": {
       "type": "ios.simulator",
       "binaryPath": "bin/Exponent.app",
       "device": {
